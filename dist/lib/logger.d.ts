@@ -1,4 +1,5 @@
-declare function getLogger(...args: string[]): {};
+import * as log4js from 'log4js';
+declare function getLogger(...args: string[]): Partial<log4js.Logger>;
 /**
  * Configure the logger.
  * Configure file just like log4js.json. And support ${scope:arg-name} format property setting.

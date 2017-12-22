@@ -27,7 +27,7 @@ function getLogger(... args : string[])
 		categoryName = categoryName.replace(process.cwd(), '');
 	}
 	var logger = log4js.getLogger(categoryName);
-	var pLogger = {};
+	var pLogger : Partial<log4js.Logger> = {};
 	for (var key in logger)
 	{
 		pLogger[key] = logger[key];
