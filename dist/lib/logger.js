@@ -8,8 +8,8 @@ var funcs = {
     'args': doArgs,
     'opts': doOpts
 };
-function getLogger(categoryName) {
-    var args = arguments;
+function getLogger(...args) {
+    var categoryName = args[0];
     var prefix = "";
     for (var i = 1; i < args.length; i++) {
         if (i !== args.length - 1)

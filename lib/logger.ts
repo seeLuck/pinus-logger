@@ -10,9 +10,9 @@ var funcs = {
 	'opts': doOpts
 };
 
-function getLogger(categoryName)
+function getLogger(... args : string[])
 {
-	var args = arguments;
+	var categoryName = args[0];
 	var prefix = "";
 	for (var i = 1; i < args.length; i++)
 	{

@@ -1,4 +1,4 @@
-declare function getLogger(categoryName: any): {};
+declare function getLogger(...args: string[]): {};
 /**
  * Configure the logger.
  * Configure file just like log4js.json. And support ${scope:arg-name} format property setting.
