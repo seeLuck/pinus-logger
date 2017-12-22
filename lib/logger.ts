@@ -1,6 +1,7 @@
-var log4js = require('log4js');
-var fs = require('fs');
-var util = require('util');
+import * as log4js from 'log4js';
+
+import * as fs from 'fs';
+import * as util from 'util';
 
 
 var funcs = {
@@ -50,7 +51,7 @@ function getLogger(categoryName) {
 	return pLogger;
 };
 
-var configState = {};
+var configState : {[key:string]:any} = {};
 
 function initReloadConfiguration(filename, reloadSecs) {
 	if (configState.timerId) {
@@ -95,11 +96,11 @@ function configureOnceOff(config) {
 	if (config) {
 		try {
 			configureLevels(config.levels);
-			if (config.replaceConsole) {
-				log4js.replaceConsole();
-			} else {
-				log4js.restoreConsole();
-			}
+			// if (config.replaceConsole) {
+			// 	log4js.replaceConsole();
+			// } else {
+			// 	log4js.restoreConsole();
+			// }
 		} catch (e) {
 			throw new Error(
 				"Problem reading log4js config " + util.inspect(config) +
@@ -113,7 +114,7 @@ function configureLevels(levels) {
 	if (levels) {
 		for (var category in levels) {
 			if (levels.hasOwnProperty(category)) {
-				log4js.getLogger(category).setLevel(levels[category]);
+				log4js.getLogger(category).level = levels[category];
 			}
 		}
 	}
@@ -147,11 +148,11 @@ function configure(config, opts) {
 	}
 
 	if (config && config.lineDebug) {
-		process.env.LOGGER_LINE = true;
+		process.env.LOGGER_LINE = "true";
 	}
 
 	if (config && config.rawMessage) {
-		process.env.RAW_MESSAGE = true;
+		process.env.RAW_MESSAGE = "true";
 	}
 
 	if (filename && config && config.reloadSecs) {
@@ -160,7 +161,7 @@ function configure(config, opts) {
 
 	// config object could not turn on the auto reload configure file in log4js
 
-	log4js.configure(config, opts);
+	log4js.configure(config);
 };
 
 function replaceProperties(configObj, opts) {
@@ -292,21 +293,8 @@ var colours = {
 	'off': "grey"
 };
 
-module.exports = {
-	getLogger: getLogger,
-	getDefaultLogger: log4js.getDefaultLogger,
-
-	addAppender: log4js.addAppender,
-	loadAppender: log4js.loadAppender,
-	clearAppenders: log4js.clearAppenders,
-	configure: configure,
-
-	replaceConsole: log4js.replaceConsole,
-	restoreConsole: log4js.restoreConsole,
-
-	levels: log4js.levels,
-	setGlobalLogLevel: log4js.setGlobalLogLevel,
-
-	layouts: log4js.layouts,
-	appenders: log4js.appenders
+export
+{
+	 getLogger,
+	 configure
 };

@@ -1,0 +1,1 @@
+import * as logger from './lib/logger'
