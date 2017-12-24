@@ -92,11 +92,13 @@ function configureOnceOff(config) {
     if (config) {
         try {
             configureLevels(config.levels);
-            // if (config.replaceConsole) {
-            // 	log4js.replaceConsole();
-            // } else {
-            // 	log4js.restoreConsole();
-            // }
+            if (config.replaceConsole) {
+                const logger = log4js.getLogger('console');
+                console.log = logger.info.bind(logger);
+                console.warn = logger.warn.bind(logger);
+                console.error = logger.error.bind(logger);
+                console.trace = logger.trace.bind(logger);
+            }
         }
         catch (e) {
             throw new Error("Problem reading log4js config " + util.inspect(config) +
@@ -140,6 +142,9 @@ function configure(config, opts) {
     }
     if (config && config.lineDebug) {
         process.env.LOGGER_LINE = "true";
+    }
+    else {
+        process.env.LOGGER_LINE = undefined;
     }
     if (config && config.rawMessage) {
         process.env.RAW_MESSAGE = "true";
