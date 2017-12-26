@@ -8,6 +8,35 @@ let funcs = {
     'args': doArgs,
     'opts': doOpts
 };
+let styles = {
+    //styles
+    'bold': [1, 22],
+    'italic': [3, 23],
+    'underline': [4, 24],
+    'inverse': [7, 27],
+    //grayscale
+    'white': [37, 39],
+    'grey': [90, 39],
+    'black': [90, 39],
+    //colors
+    'blue': [34, 39],
+    'cyan': [36, 39],
+    'green': [32, 39],
+    'magenta': [35, 39],
+    'red': [31, 39],
+    'yellow': [33, 39]
+};
+let colours = {
+    'all': "grey",
+    'log': "grey",
+    'trace': "blue",
+    'debug': "cyan",
+    'info': "green",
+    'warn': "yellow",
+    'error': "red",
+    'fatal': "magenta",
+    'off': "grey"
+};
 function getLogger(...args) {
     let categoryName = args[0];
     let prefix = "";
@@ -26,7 +55,7 @@ function getLogger(...args) {
     for (let key in logger) {
         pLogger[key] = logger[key];
     }
-    ['log', 'debug', 'info', 'warn', 'error', 'trace', 'fatal'].forEach(function (item) {
+    ['log', 'debug', 'info', 'warn', 'error', 'trace', 'fatal'].forEach((item) => {
         pLogger[item] = function () {
             let p = "";
             if (!process.env.RAW_MESSAGE) {
@@ -36,7 +65,8 @@ function getLogger(...args) {
                 if (args.length && process.env.LOGGER_LINE) {
                     p = getLine() + ": " + p;
                 }
-                p = colorize(p, colours[item]);
+                var a = colours[item];
+                p = colorize(p, a);
             }
             if (args.length) {
                 arguments[0] = p + arguments[0];
@@ -91,7 +121,7 @@ function reloadConfiguration() {
 function configureOnceOff(config) {
     if (config) {
         try {
-            configureLevels(config.levels);
+            configureLevels(config.categories);
             if (config.replaceConsole) {
                 const logger = log4js.getLogger('console');
                 console.log = logger.info.bind(logger);
@@ -111,31 +141,22 @@ function configureLevels(levels) {
     if (levels) {
         for (let category in levels) {
             if (levels.hasOwnProperty(category)) {
-                log4js.getLogger(category).level = levels[category];
+                log4js.getLogger(category).level = levels[category].level;
             }
         }
     }
 }
 ;
-/**
- * Configure the logger.
- * Configure file just like log4js.json. And support ${scope:arg-name} format property setting.
- * It can replace the placeholder in runtime.
- * scope can be:
- *     env: environment variables, such as: env:PATH
- *     args: command line arguments, such as: args:1
- *     opts: key/value from opts argument of configure function
- *
- * @param  {String|Object} config configure file name or configure object
- * @param  {Object} opts   options
- * @return {Void}
- */
-function configure(config, opts) {
-    let filename = config;
-    config = config || process.env.LOG4JS_CONFIG;
+function configure(configOrFilename, opts) {
+    let filename = configOrFilename;
+    configOrFilename = configOrFilename || process.env.LOG4JS_CONFIG;
     opts = opts || {};
-    if (typeof config === 'string') {
-        config = JSON.parse(fs.readFileSync(config, "utf8"));
+    var config;
+    if (typeof configOrFilename === 'string') {
+        config = JSON.parse(fs.readFileSync(configOrFilename, "utf8"));
+    }
+    else {
+        config = configOrFilename;
     }
     if (config) {
         config = replaceProperties(config, opts);
@@ -212,11 +233,11 @@ function doReplace(src, opts) {
     }
     return res;
 }
-function doEnv(name) {
+function doEnv(name, opts) {
     return process.env[name];
 }
-function doArgs(name) {
-    return process.argv[name];
+function doArgs(name, opts) {
+    return process.argv[Number(name)];
 }
 function doOpts(name, opts) {
     return opts ? opts[name] : undefined;
@@ -241,32 +262,4 @@ function colorizeEnd(style) {
 function colorize(str, style) {
     return colorizeStart(style) + str + colorizeEnd(style);
 }
-let styles = {
-    //styles
-    'bold': [1, 22],
-    'italic': [3, 23],
-    'underline': [4, 24],
-    'inverse': [7, 27],
-    //grayscale
-    'white': [37, 39],
-    'grey': [90, 39],
-    'black': [90, 39],
-    //colors
-    'blue': [34, 39],
-    'cyan': [36, 39],
-    'green': [32, 39],
-    'magenta': [35, 39],
-    'red': [31, 39],
-    'yellow': [33, 39]
-};
-let colours = {
-    'all': "grey",
-    'trace': "blue",
-    'debug': "cyan",
-    'info': "green",
-    'warn': "yellow",
-    'error': "red",
-    'fatal': "magenta",
-    'off': "grey"
-};
 //# sourceMappingURL=logger.js.map

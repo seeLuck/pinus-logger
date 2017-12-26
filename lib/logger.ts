@@ -2,12 +2,44 @@ import * as log4js from 'log4js';
 
 import * as fs from 'fs';
 import * as util from 'util';
+import { Configuration, Levels } from 'log4js';
 
 
-let funcs = {
+let funcs: {[key:string] : (name:string , opts:any) => string} = {
 	'env': doEnv,
 	'args': doArgs,
 	'opts': doOpts
+};
+
+let styles = {
+	//styles
+	'bold': [1, 22],
+	'italic': [3, 23],
+	'underline': [4, 24],
+	'inverse': [7, 27],
+	//grayscale
+	'white': [37, 39],
+	'grey': [90, 39],
+	'black': [90, 39],
+	//colors
+	'blue': [34, 39],
+	'cyan': [36, 39],
+	'green': [32, 39],
+	'magenta': [35, 39],
+	'red': [31, 39],
+	'yellow': [33, 39]
+};
+
+let colours = {
+	'all': "grey",
+	'log': "grey",
+	'trace': "blue",
+	'debug': "cyan",
+	'info': "green",
+	'warn': "yellow",
+	'error': "red",
+	'fatal': "magenta",
+	'off': "grey"
 };
 
 function getLogger(... args : string[])
@@ -26,14 +58,14 @@ function getLogger(... args : string[])
 		// category name is __filename then cut the prefix path
 		categoryName = categoryName.replace(process.cwd(), '');
 	}
-	let logger = log4js.getLogger(categoryName);
-	let pLogger : Partial<log4js.Logger> = {};
+	let logger = log4js.getLogger(categoryName) as any;
+	let pLogger : any = {};
 	for (let key in logger)
 	{
 		pLogger[key] = logger[key];
 	}
 
-	['log', 'debug', 'info', 'warn', 'error', 'trace', 'fatal'].forEach(function (item)
+	['log', 'debug', 'info', 'warn', 'error', 'trace', 'fatal'].forEach((item : keyof typeof colours)=>
 	{
 		pLogger[item] = function ()
 		{
@@ -48,7 +80,8 @@ function getLogger(... args : string[])
 				{
 					p = getLine() + ": " + p;
 				}
-				p = colorize(p, colours[item]);
+				var a = colours[item];
+				p = colorize(p, a as keyof typeof styles);
 			}
 
 			if (args.length)
@@ -58,7 +91,7 @@ function getLogger(... args : string[])
 			logger[item].apply(logger, arguments);
 		}
 	});
-	return pLogger;
+	return pLogger as log4js.Logger;
 };
 
 let configState: { [key: string]: any } = {};
@@ -112,13 +145,13 @@ function reloadConfiguration()
 };
 
 
-function configureOnceOff(config)
+function configureOnceOff(config : Config)
 {
 	if (config)
 	{
 		try
 		{
-			configureLevels(config.levels);
+			configureLevels(config.categories);
 			if (config.replaceConsole)
 			{
 				const logger = log4js.getLogger('console');
@@ -137,7 +170,7 @@ function configureOnceOff(config)
 	}
 };
 
-function configureLevels(levels: object)
+function configureLevels(levels:  { [name: string]: { level: string; } })
 {
 	if (levels)
 	{
@@ -145,7 +178,7 @@ function configureLevels(levels: object)
 		{
 			if (levels.hasOwnProperty(category))
 			{
-				log4js.getLogger(category).level = levels[category];
+				log4js.getLogger(category).level = levels[category].level;
 			}
 		}
 	}
@@ -164,16 +197,21 @@ function configureLevels(levels: object)
  * @param  {Object} opts   options
  * @return {Void}
  */
-
-function configure(config, opts: object)
+export type Config = Configuration & { lineDebug?: boolean, rawMessage?: boolean, reloadSecs?: number, replaceConsole ?: boolean };
+function configure(configOrFilename: string | Config, opts: object)
 {
-	let filename = config;
-	config = config || process.env.LOG4JS_CONFIG;
+	let filename = configOrFilename as string;
+	configOrFilename = configOrFilename || process.env.LOG4JS_CONFIG;
 	opts = opts || {};
 
-	if (typeof config === 'string')
+	var config: Config;
+	if (typeof configOrFilename === 'string')
 	{
-		config = JSON.parse(fs.readFileSync(config, "utf8"));
+		config = JSON.parse(fs.readFileSync(configOrFilename, "utf8")) as Config;
+	}
+	else
+	{
+		config = configOrFilename;
 	}
 
 	if (config)
@@ -205,7 +243,7 @@ function configure(config, opts: object)
 	log4js.configure(config);
 };
 
-function replaceProperties(configObj, opts: object)
+function replaceProperties(configObj : any, opts: object)
 {
 	if (configObj instanceof Array)
 	{
@@ -284,17 +322,17 @@ function doReplace(src: string, opts: object)
 	return res;
 }
 
-function doEnv(name: string)
+function doEnv(name: string, opts: any) : string
 {
 	return process.env[name];
 }
 
-function doArgs(name: string)
+function doArgs(name: string, opts: any) : string
 {
-	return process.argv[name];
+	return process.argv[Number(name)];
 }
 
-function doOpts(name: string, opts: object)
+function doOpts(name: string, opts: any) : string
 {
 	return opts ? opts[name] : undefined;
 }
@@ -310,52 +348,22 @@ function getLine()
 	return e.stack.split('\n')[3].split(':')[1];
 }
 
-function colorizeStart(style)
+function colorizeStart(style : keyof typeof styles)
 {
 	return style ? '\x1B[' + styles[style][0] + 'm' : '';
 }
 
-function colorizeEnd(style)
+function colorizeEnd(style : keyof typeof styles)
 {
 	return style ? '\x1B[' + styles[style][1] + 'm' : '';
 }
 /**
  * Taken from masylum's fork (https://github.com/masylum/log4js-node)
  */
-function colorize(str: string, style)
+function colorize(str: string, style : keyof typeof styles)
 {
 	return colorizeStart(style) + str + colorizeEnd(style);
 }
-
-let styles = {
-	//styles
-	'bold': [1, 22],
-	'italic': [3, 23],
-	'underline': [4, 24],
-	'inverse': [7, 27],
-	//grayscale
-	'white': [37, 39],
-	'grey': [90, 39],
-	'black': [90, 39],
-	//colors
-	'blue': [34, 39],
-	'cyan': [36, 39],
-	'green': [32, 39],
-	'magenta': [35, 39],
-	'red': [31, 39],
-	'yellow': [33, 39]
-};
-
-let colours = {
-	'all': "grey",
-	'trace': "blue",
-	'debug': "cyan",
-	'info': "green",
-	'warn': "yellow",
-	'error': "red",
-	'fatal': "magenta",
-	'off': "grey"
-};
 
 export
 {

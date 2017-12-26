@@ -1,5 +1,6 @@
 import * as log4js from 'log4js';
-declare function getLogger(...args: string[]): Partial<log4js.Logger>;
+import { Configuration } from 'log4js';
+declare function getLogger(...args: string[]): log4js.Logger;
 /**
  * Configure the logger.
  * Configure file just like log4js.json. And support ${scope:arg-name} format property setting.
@@ -13,5 +14,11 @@ declare function getLogger(...args: string[]): Partial<log4js.Logger>;
  * @param  {Object} opts   options
  * @return {Void}
  */
-declare function configure(config: any, opts: object): void;
+export declare type Config = Configuration & {
+    lineDebug?: boolean;
+    rawMessage?: boolean;
+    reloadSecs?: number;
+    replaceConsole?: boolean;
+};
+declare function configure(configOrFilename: string | Config, opts: object): void;
 export { getLogger, configure };
