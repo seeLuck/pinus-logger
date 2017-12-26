@@ -17,8 +17,8 @@
       "es2016",
       "esnext.asynciterable"
   ],
-    "noImplicitAny": false, //在表达式和声明上有隐含的'any'类型时报错。
-    "noImplicitThis": false,
+    "noImplicitAny": true, //在表达式和声明上有隐含的'any'类型时报错。
+    "noImplicitThis": true,
     "declaration": true,
     "declarationDir": "./dist",
     "sourceMap": true,     //用于debug

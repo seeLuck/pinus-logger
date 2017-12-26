@@ -13,5 +13,5 @@ declare function getLogger(...args: string[]): Partial<log4js.Logger>;
  * @param  {Object} opts   options
  * @return {Void}
  */
-declare function configure(config: any, opts: any): void;
+declare function configure(config: any, opts: object): void;
 export { getLogger, configure };
