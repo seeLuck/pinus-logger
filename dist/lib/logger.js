@@ -3,15 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const log4js = require("log4js");
 const fs = require("fs");
 const util = require("util");
-var funcs = {
+let funcs = {
     'env': doEnv,
     'args': doArgs,
     'opts': doOpts
 };
 function getLogger(...args) {
-    var categoryName = args[0];
-    var prefix = "";
-    for (var i = 1; i < args.length; i++) {
+    let categoryName = args[0];
+    let prefix = "";
+    for (let i = 1; i < args.length; i++) {
         if (i !== args.length - 1)
             prefix = prefix + args[i] + "] [";
         else
@@ -21,14 +21,14 @@ function getLogger(...args) {
         // category name is __filename then cut the prefix path
         categoryName = categoryName.replace(process.cwd(), '');
     }
-    var logger = log4js.getLogger(categoryName);
-    var pLogger = {};
-    for (var key in logger) {
+    let logger = log4js.getLogger(categoryName);
+    let pLogger = {};
+    for (let key in logger) {
         pLogger[key] = logger[key];
     }
     ['log', 'debug', 'info', 'warn', 'error', 'trace', 'fatal'].forEach(function (item) {
         pLogger[item] = function () {
-            var p = "";
+            let p = "";
             if (!process.env.RAW_MESSAGE) {
                 if (args.length > 1) {
                     p = "[" + prefix + "] ";
@@ -48,7 +48,7 @@ function getLogger(...args) {
 }
 exports.getLogger = getLogger;
 ;
-var configState = {};
+let configState = {};
 function initReloadConfiguration(filename, reloadSecs) {
     if (configState.timerId) {
         clearInterval(configState.timerId);
@@ -60,7 +60,7 @@ function initReloadConfiguration(filename, reloadSecs) {
 }
 ;
 function getMTime(filename) {
-    var mtime;
+    let mtime;
     try {
         mtime = fs.statSync(filename).mtime;
     }
@@ -78,7 +78,7 @@ function loadConfigurationFile(filename) {
 }
 ;
 function reloadConfiguration() {
-    var mtime = getMTime(configState.filename);
+    let mtime = getMTime(configState.filename);
     if (!mtime) {
         return;
     }
@@ -109,7 +109,7 @@ function configureOnceOff(config) {
 ;
 function configureLevels(levels) {
     if (levels) {
-        for (var category in levels) {
+        for (let category in levels) {
             if (levels.hasOwnProperty(category)) {
                 log4js.getLogger(category).level = levels[category];
             }
@@ -131,7 +131,7 @@ function configureLevels(levels) {
  * @return {Void}
  */
 function configure(config, opts) {
-    var filename = config;
+    let filename = config;
     config = config || process.env.LOG4JS_CONFIG;
     opts = opts || {};
     if (typeof config === 'string') {
@@ -159,13 +159,13 @@ exports.configure = configure;
 ;
 function replaceProperties(configObj, opts) {
     if (configObj instanceof Array) {
-        for (var i = 0, l = configObj.length; i < l; i++) {
+        for (let i = 0, l = configObj.length; i < l; i++) {
             configObj[i] = replaceProperties(configObj[i], opts);
         }
     }
     else if (typeof configObj === 'object') {
-        var field;
-        for (var f in configObj) {
+        let field;
+        for (let f in configObj) {
             if (!configObj.hasOwnProperty(f)) {
                 continue;
             }
@@ -184,8 +184,8 @@ function doReplace(src, opts) {
     if (!src) {
         return src;
     }
-    var ptn = /\$\{(.*?)\}/g;
-    var m, pro, ts, scope, name, defaultValue, func, res = '', lastIndex = 0;
+    let ptn = /\$\{(.*?)\}/g;
+    let m, pro, ts, scope, name, defaultValue, func, res = '', lastIndex = 0;
     while ((m = ptn.exec(src))) {
         pro = m[1];
         ts = pro.split(':');
@@ -222,7 +222,7 @@ function doOpts(name, opts) {
     return opts ? opts[name] : undefined;
 }
 function getLine() {
-    var e = new Error();
+    let e = new Error();
     // now magic will happen: get line number from callstack
     if (process.platform === "win32") {
         return e.stack.split('\n')[3].split(':')[2];
@@ -241,7 +241,7 @@ function colorizeEnd(style) {
 function colorize(str, style) {
     return colorizeStart(style) + str + colorizeEnd(style);
 }
-var styles = {
+let styles = {
     //styles
     'bold': [1, 22],
     'italic': [3, 23],
@@ -259,7 +259,7 @@ var styles = {
     'red': [31, 39],
     'yellow': [33, 39]
 };
-var colours = {
+let colours = {
     'all': "grey",
     'trace': "blue",
     'debug': "cyan",

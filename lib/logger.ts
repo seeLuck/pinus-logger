@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as util from 'util';
 
 
-var funcs = {
+let funcs = {
 	'env': doEnv,
 	'args': doArgs,
 	'opts': doOpts
@@ -12,9 +12,9 @@ var funcs = {
 
 function getLogger(... args : string[])
 {
-	var categoryName = args[0];
-	var prefix = "";
-	for (var i = 1; i < args.length; i++)
+	let categoryName = args[0];
+	let prefix = "";
+	for (let i = 1; i < args.length; i++)
 	{
 		if (i !== args.length - 1)
 			prefix = prefix + args[i] + "] [";
@@ -26,9 +26,9 @@ function getLogger(... args : string[])
 		// category name is __filename then cut the prefix path
 		categoryName = categoryName.replace(process.cwd(), '');
 	}
-	var logger = log4js.getLogger(categoryName);
-	var pLogger : Partial<log4js.Logger> = {};
-	for (var key in logger)
+	let logger = log4js.getLogger(categoryName);
+	let pLogger : Partial<log4js.Logger> = {};
+	for (let key in logger)
 	{
 		pLogger[key] = logger[key];
 	}
@@ -37,7 +37,7 @@ function getLogger(... args : string[])
 	{
 		pLogger[item] = function ()
 		{
-			var p = "";
+			let p = "";
 			if (!process.env.RAW_MESSAGE)
 			{
 				if (args.length > 1)
@@ -61,9 +61,9 @@ function getLogger(... args : string[])
 	return pLogger;
 };
 
-var configState: { [key: string]: any } = {};
+let configState: { [key: string]: any } = {};
 
-function initReloadConfiguration(filename, reloadSecs)
+function initReloadConfiguration(filename: string, reloadSecs: number)
 {
 	if (configState.timerId)
 	{
@@ -75,9 +75,9 @@ function initReloadConfiguration(filename, reloadSecs)
 	configState.timerId = setInterval(reloadConfiguration, reloadSecs * 1000);
 };
 
-function getMTime(filename)
+function getMTime(filename: string)
 {
-	var mtime;
+	let mtime;
 	try
 	{
 		mtime = fs.statSync(filename).mtime;
@@ -88,7 +88,7 @@ function getMTime(filename)
 	return mtime;
 };
 
-function loadConfigurationFile(filename)
+function loadConfigurationFile(filename: string)
 {
 	if (filename)
 	{
@@ -99,7 +99,7 @@ function loadConfigurationFile(filename)
 
 function reloadConfiguration()
 {
-	var mtime = getMTime(configState.filename);
+	let mtime = getMTime(configState.filename);
 	if (!mtime)
 	{
 		return;
@@ -122,10 +122,10 @@ function configureOnceOff(config)
 			if (config.replaceConsole)
 			{
 				const logger = log4js.getLogger('console');
-				console.log = logger.info.bind(logger);	
-				console.warn = logger.warn.bind(logger);	
-				console.error = logger.error.bind(logger);	
-				console.trace = logger.trace.bind(logger);	
+				console.log = logger.info.bind(logger);
+				console.warn = logger.warn.bind(logger);
+				console.error = logger.error.bind(logger);
+				console.trace = logger.trace.bind(logger);
 			}
 		} catch (e)
 		{
@@ -137,11 +137,11 @@ function configureOnceOff(config)
 	}
 };
 
-function configureLevels(levels)
+function configureLevels(levels: object)
 {
 	if (levels)
 	{
-		for (var category in levels)
+		for (let category in levels)
 		{
 			if (levels.hasOwnProperty(category))
 			{
@@ -165,9 +165,9 @@ function configureLevels(levels)
  * @return {Void}
  */
 
-function configure(config, opts)
+function configure(config, opts: object)
 {
-	var filename = config;
+	let filename = config;
 	config = config || process.env.LOG4JS_CONFIG;
 	opts = opts || {};
 
@@ -205,18 +205,18 @@ function configure(config, opts)
 	log4js.configure(config);
 };
 
-function replaceProperties(configObj, opts)
+function replaceProperties(configObj, opts: object)
 {
 	if (configObj instanceof Array)
 	{
-		for (var i = 0, l = configObj.length; i < l; i++)
+		for (let i = 0, l = configObj.length; i < l; i++)
 		{
 			configObj[i] = replaceProperties(configObj[i], opts);
 		}
 	} else if (typeof configObj === 'object')
 	{
-		var field;
-		for (var f in configObj)
+		let field;
+		for (let f in configObj)
 		{
 			if (!configObj.hasOwnProperty(f))
 			{
@@ -237,15 +237,15 @@ function replaceProperties(configObj, opts)
 	return configObj;
 }
 
-function doReplace(src, opts)
+function doReplace(src: string, opts: object)
 {
 	if (!src)
 	{
 		return src;
 	}
 
-	var ptn = /\$\{(.*?)\}/g;
-	var m, pro, ts, scope, name, defaultValue, func, res = '',
+	let ptn = /\$\{(.*?)\}/g;
+	let m, pro, ts, scope, name, defaultValue, func, res = '',
 		lastIndex = 0;
 	while ((m = ptn.exec(src)))
 	{
@@ -284,24 +284,24 @@ function doReplace(src, opts)
 	return res;
 }
 
-function doEnv(name)
+function doEnv(name: string)
 {
 	return process.env[name];
 }
 
-function doArgs(name)
+function doArgs(name: string)
 {
 	return process.argv[name];
 }
 
-function doOpts(name, opts)
+function doOpts(name: string, opts: object)
 {
 	return opts ? opts[name] : undefined;
 }
 
 function getLine()
 {
-	var e = new Error();
+	let e = new Error();
 	// now magic will happen: get line number from callstack
 	if (process.platform === "win32")
 	{
@@ -322,12 +322,12 @@ function colorizeEnd(style)
 /**
  * Taken from masylum's fork (https://github.com/masylum/log4js-node)
  */
-function colorize(str, style)
+function colorize(str: string, style)
 {
 	return colorizeStart(style) + str + colorizeEnd(style);
 }
 
-var styles = {
+let styles = {
 	//styles
 	'bold': [1, 22],
 	'italic': [3, 23],
@@ -346,7 +346,7 @@ var styles = {
 	'yellow': [33, 39]
 };
 
-var colours = {
+let colours = {
 	'all': "grey",
 	'trace': "blue",
 	'debug': "cyan",
